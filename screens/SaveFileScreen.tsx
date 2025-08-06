@@ -1,38 +1,100 @@
 import {Button, StyleSheet} from "react-native";
-import { Text, View } from '@/components/Themed';
+import {Text, View} from '@/components/Themed';
 import * as FileSystem from 'expo-file-system';
 import * as SQLite from 'expo-sqlite';
 import {Row} from "@/screens/TextDisplayScreen";
 import {useEffect, useState} from "react";
+import {IntentLauncherParams, startActivityAsync,} from 'expo-intent-launcher';
+import * as MediaLibrary from 'expo-media-library';
 
-const jsonPath = FileSystem.documentDirectory + 'output.json';
+const fileName = 'output.txt'
+const appDocumentUri = FileSystem.documentDirectory + fileName;
 
-const test = async () => {
-    const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync()
-    console.log('granted', permissions.granted);
-}
-
-const onPress = async () => {
-    const db = await SQLite.openDatabaseAsync('test_db');
-    const allRows = await db.getAllAsync<Row>('SELECT * FROM test');
-
-    const serialized = JSON.stringify(allRows);
+const getAllFromDb = async () => {
     try {
-        await FileSystem.writeAsStringAsync(jsonPath, serialized);
-    } catch (err) {
-        console.error(err);
+        const db = await SQLite.openDatabaseAsync('test_db');
+        return  await db.getAllAsync<Row>('SELECT * FROM test');
+    } catch (error) {
+        console.error(error);
     }
 }
 
-const getSavedFile = async () => await FileSystem.readAsStringAsync(jsonPath);
-
-const prettifyFile = (jsonString: string) => JSON.stringify(JSON.parse(jsonString), null, 2);
+const prettifyFile = (jsonString: string) => JSON.stringify(JSON.parse(jsonString), null, 6);
+const getSavedFile = async () => prettifyFile(await FileSystem.readAsStringAsync(appDocumentUri));
 
 export default function SaveFileScreen() {
     const [fileContents, setFileContents] = useState('');
+    const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
+
+    const createFile = async () => {
+        if (permissionResponse?.status !== 'granted') {
+            await requestPermission();
+        }
+
+        try {
+            const intentParams: IntentLauncherParams = {
+                type: 'application/json',
+                extra: {
+                    'android.intent.extra.TITLE': "tmp" + fileName,
+                },
+                category: 'android.intent.category.OPENABLE',
+            };
+
+            const result = await startActivityAsync(
+                'android.intent.action.CREATE_DOCUMENT',
+                intentParams
+            );
+
+            if (result && result.resultCode === -1 && result.data) { // -1 indicates RESULT_OK
+
+                const rgxExpMatchArray = result.data.match(/(?<=dat=).*(?=\.\.\.)/gi);
+
+                console.log(rgxExpMatchArray);
+
+                if (rgxExpMatchArray && rgxExpMatchArray.length > 0) {
+                    const uri = rgxExpMatchArray[0] + fileName;
+                    console.log('File created at:', uri);
+                    console.log('result:', JSON.stringify(result, null , 4));
+                    return uri;
+                }
+
+            } else {
+                console.log('File creation cancelled or failed.');
+            }
+        } catch (error) {
+            console.error('Error creating file:', error);
+        }
+    }
+
+    const onPress = async () => {
+        try {
+            const allRows = await getAllFromDb();
+            const payload = JSON.stringify(allRows);
+            console.log(payload);
+
+            await FileSystem.writeAsStringAsync(appDocumentUri, payload);
+
+            const asset = await MediaLibrary.createAssetAsync(appDocumentUri);
+            try {
+                const album = await MediaLibrary.getAlbumAsync('Download');
+                if (album == null) {
+                    await MediaLibrary.createAlbumAsync('Download', asset, false);
+                } else {
+                    await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+                }
+            } catch (e) {
+                console.error('Error creating file:', e);
+            }
+
+            console.info('uri', appDocumentUri);
+        } catch (error) {
+            console.error(error);
+        }
+
+    }
 
     useEffect(() => {
-        getSavedFile().then((fileStr) => setFileContents(prettifyFile(fileStr)))
+        getSavedFile().then(setFileContents)
     }, [])
 
     return (

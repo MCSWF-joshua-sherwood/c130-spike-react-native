@@ -1,7 +1,6 @@
-import { Text, View } from '@/components/Themed';
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { StyleSheet } from 'react-native';
-import { useEffect, useState } from 'react';
+import {Text, View} from '@/components/Themed';
+import {StyleSheet} from 'react-native';
+import {useEffect, useState} from 'react';
 import * as SQLite from 'expo-sqlite';
 
 export interface Row {
