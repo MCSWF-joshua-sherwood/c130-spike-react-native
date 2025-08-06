@@ -4,7 +4,7 @@ import { StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
 import * as SQLite from 'expo-sqlite';
 
-interface Row {
+export interface Row {
   id: number;
   value: string;
 }

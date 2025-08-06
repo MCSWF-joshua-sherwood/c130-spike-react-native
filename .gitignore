@@ -39,3 +39,8 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# ide
+.idea
+.idea/
+.idea/misc.xml

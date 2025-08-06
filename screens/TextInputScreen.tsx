@@ -23,6 +23,7 @@ export default function TextInputScreen() {
   async function resetDB(event: GestureResponderEvent) {
     setDisabled(true);
     const db = await SQLite.openDatabaseAsync('test_db');
+    console.info('db connected');
     try {
       await db.execAsync(`
         drop table if exists test;
