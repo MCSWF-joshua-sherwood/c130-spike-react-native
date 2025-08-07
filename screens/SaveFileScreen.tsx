@@ -6,6 +6,7 @@ import {Row} from "@/screens/TextDisplayScreen";
 import {useEffect, useState} from "react";
 import {IntentLauncherParams, startActivityAsync,} from 'expo-intent-launcher';
 import * as MediaLibrary from 'expo-media-library';
+import * as Sharing from 'expo-sharing';
 
 const fileName = 'output.txt'
 const appDocumentUri = FileSystem.documentDirectory + fileName;
@@ -67,6 +68,8 @@ export default function SaveFileScreen() {
     }
 
     const onPress = async () => {
+        const fileName = 'output.json'
+        const appDocumentUri = FileSystem.documentDirectory + fileName;
         try {
             const allRows = await getAllFromDb();
             const payload = JSON.stringify(allRows);
@@ -74,23 +77,16 @@ export default function SaveFileScreen() {
 
             await FileSystem.writeAsStringAsync(appDocumentUri, payload);
 
-            const asset = await MediaLibrary.createAssetAsync(appDocumentUri);
-            try {
-                const album = await MediaLibrary.getAlbumAsync('Download');
-                if (album == null) {
-                    await MediaLibrary.createAlbumAsync('Download', asset, false);
-                } else {
-                    await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-                }
-            } catch (e) {
-                console.error('Error creating file:', e);
+            if (await Sharing.isAvailableAsync()) {
+                await Sharing.shareAsync(appDocumentUri, {
+                    mimeType: 'application/pdf',
+                    dialogTitle: 'Save or share this report',
+                });
             }
-
             console.info('uri', appDocumentUri);
         } catch (error) {
             console.error(error);
         }
-
     }
 
     useEffect(() => {

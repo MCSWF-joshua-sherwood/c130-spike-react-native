@@ -33,7 +33,8 @@
     "expo-sqlite": "~15.2.14",
     "expo-file-system": "~18.1.11",
     "expo-intent-launcher": "~12.1.5",
-    "expo-media-library": "~17.1.7"
+    "expo-media-library": "~17.1.7",
+    "expo-sharing": "~13.1.5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
