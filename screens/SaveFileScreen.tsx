@@ -6,7 +6,7 @@ import {Row} from "@/screens/TextDisplayScreen";
 import {useEffect, useState} from "react";
 import {IntentLauncherParams, startActivityAsync,} from 'expo-intent-launcher';
 import * as MediaLibrary from 'expo-media-library';
-import * as Sharing from 'expo-sharing';
+import RNFS from 'react-native-fs';
 
 const fileName = 'output.txt'
 const appDocumentUri = FileSystem.documentDirectory + fileName;
@@ -68,22 +68,23 @@ export default function SaveFileScreen() {
     }
 
     const onPress = async () => {
-        const fileName = 'output.json'
-        const appDocumentUri = FileSystem.documentDirectory + fileName;
         try {
             const allRows = await getAllFromDb();
             const payload = JSON.stringify(allRows);
             console.log(payload);
 
-            await FileSystem.writeAsStringAsync(appDocumentUri, payload);
+            const path = `${RNFS.DownloadDirectoryPath}/Reports/my-report-3.json`;
 
-            if (await Sharing.isAvailableAsync()) {
-                await Sharing.shareAsync(appDocumentUri, {
-                    mimeType: 'application/pdf',
-                    dialogTitle: 'Save or share this report',
-                });
+            await RNFS.mkdir(`${RNFS.DownloadDirectoryPath}/Reports`);
+            try {
+                await RNFS.writeFile(path, payload, 'utf8');
+                console.log(`✅ JSON file saved to ${path}`);
+            } catch (err) {
+                console.error('Failed to save JSON file:', err);
             }
-            console.info('uri', appDocumentUri);
+
+            console.log('Saved to:', path);
+
         } catch (error) {
             console.error(error);
         }
