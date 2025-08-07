@@ -13,10 +13,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.c130spikereactnative"
-    },
+    "platforms": ["android"],
     "android": {
       "permissions": [
         "'android.permission.MANAGE_EXTERNAL_STORAGE'"
@@ -27,11 +24,6 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.anonymous.c130spikereactnative"
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",

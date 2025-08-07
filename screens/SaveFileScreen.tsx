@@ -73,7 +73,7 @@ export default function SaveFileScreen() {
             const payload = JSON.stringify(allRows);
             console.log(payload);
 
-            const path = `${RNFS.DownloadDirectoryPath}/Reports/my-report-3.json`;
+            const path = `${RNFS.DownloadDirectoryPath}/Reports/my-report-4.json`;
 
             await RNFS.mkdir(`${RNFS.DownloadDirectoryPath}/Reports`);
             try {
