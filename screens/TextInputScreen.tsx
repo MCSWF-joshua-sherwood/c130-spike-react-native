@@ -10,26 +10,25 @@ export default function TextInputScreen() {
   async function saveText(event: GestureResponderEvent) {
     setDisabled(true);
     const db = await SQLite.openDatabaseAsync('test_db');
-    console.info('db connected');
     try {
       await db.runAsync('INSERT INTO test (value) VALUES (?)', val);
     } catch (err) {
       console.error(err);
     }
-    console.info('db saved');
+    console.info('db saved value:', val);
     setDisabled(false);
   }
 
   async function resetDB(event: GestureResponderEvent) {
     setDisabled(true);
     const db = await SQLite.openDatabaseAsync('test_db');
-    console.info('db connected');
     try {
       await db.execAsync(`
         drop table if exists test;
         create table test (id integer primary key not null, value text not null);
         insert into test (value) values ('Auto-generated db text');
     `);
+    console.log('db reset');
     } catch (err) {
       console.error(err);
     }
